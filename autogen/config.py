@@ -101,7 +101,7 @@ class AgentConfig:
 
     RESEARCH_AGENT = {
         "name": "ResearchAgent",
-        "role": "Market Researcher",
+        "role": "Market Intelligence Analyst",
         "temperature": 0.7,
     }
 
@@ -123,6 +123,12 @@ class AgentConfig:
         "temperature": 0.7,
     }
 
+    TECHNICAL_ARCHITECT_AGENT = {
+        "name": "TechnicalArchitectAgent",
+        "role": "Technical Architect",
+        "temperature": 0.7,
+    }
+
     @classmethod
     def get_agent_config(cls, agent_type: str) -> Dict[str, Any]:
         """Get configuration for a specific agent type"""
@@ -130,6 +136,7 @@ class AgentConfig:
             "research": cls.RESEARCH_AGENT,
             "analysis": cls.ANALYSIS_AGENT,
             "blueprint": cls.BLUEPRINT_AGENT,
+            "technical": cls.TECHNICAL_ARCHITECT_AGENT,
             "reviewer": cls.REVIEWER_AGENT,
         }
         return agents.get(agent_type, {})
@@ -143,6 +150,7 @@ class WorkflowConfig:
         "research",
         "analysis",
         "blueprint",
+        "technical",
         "review",
     ]
 
@@ -151,6 +159,7 @@ class WorkflowConfig:
         "research": "Market Research & Competitive Analysis",
         "analysis": "Market Gap Analysis & Opportunities",
         "blueprint": "Product Blueprint Creation",
+        "technical": "Technical Architecture Design",
         "review": "Strategic Review & Recommendations",
     }
 
@@ -159,6 +168,7 @@ class WorkflowConfig:
         "research": "Conduct market analysis for AI-powered interview platforms",
         "analysis": "Identify 3 key market opportunities and gaps",
         "blueprint": "Create product blueprint with features and user flows",
+        "technical": "Design technical architecture and technology stack",
         "review": "Review blueprint and provide strategic recommendations",
     }
 

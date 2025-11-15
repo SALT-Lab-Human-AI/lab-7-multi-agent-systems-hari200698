@@ -15,6 +15,7 @@ Agents:
 2. HotelAgent - Accommodation Specialist (finds real hotels)
 3. ItineraryAgent - Travel Planner (creates realistic itineraries)
 4. BudgetAgent - Financial Advisor (analyzes real costs)
+5. DocumentationAgent - Travel Documentation Specialist (prepares travel guide)
 
 Configuration:
 - Uses shared configuration from the root .env file
@@ -46,12 +47,20 @@ def search_flight_prices(destination: str, departure_city: str = "New York") -> 
     """
     Search for real flight prices and options to a destination.
     Uses web search to find current flight information from major booking sites.
+    
+    Args:
+        destination: The destination city or country
+        departure_city: The departure city (default: "New York")
+        
+    Returns:
+        A string containing research instructions for flight information
     """
-    search_query = f"flights from {departure_city} to {destination} prices 2026 best options"
+    try:
+        search_query = f"flights from {departure_city} to {destination} prices 2026 best options"
 
-    # In production, this would use a real flight API (Skyscanner, Kayak, etc.)
-    # For now, the LLM will use this to inform its research
-    return f"""
+        # In production, this would use a real flight API (Skyscanner, Kayak, etc.)
+        # For now, the LLM will use this to inform its research
+        result = f"""
     Research task: Find flights from {departure_city} to {destination}.
 
     Please research and provide:
@@ -63,6 +72,9 @@ def search_flight_prices(destination: str, departure_city: str = "New York") -> 
 
     Focus on realistic, current pricing for January 2026 travel.
     """
+        return str(result).strip()
+    except Exception as e:
+        return f"Error researching flights from {departure_city} to {destination}: {str(e)}"
 
 
 @tool
@@ -70,10 +82,18 @@ def search_hotel_options(location: str, check_in_date: str) -> str:
     """
     Search for real hotel options using web search.
     Provides current hotel availability and pricing information.
+    
+    Args:
+        location: The location to search for hotels
+        check_in_date: The check-in date
+        
+    Returns:
+        A string containing research instructions for hotel information
     """
-    search_query = f"hotels in {location} {check_in_date} reviews ratings prices 2026"
+    try:
+        search_query = f"hotels in {location} {check_in_date} reviews ratings prices 2026"
 
-    return f"""
+        result = f"""
     Research task: Find hotels in {location} for check-in {check_in_date}.
 
     Please research and provide:
@@ -86,6 +106,9 @@ def search_hotel_options(location: str, check_in_date: str) -> str:
     Include budget, mid-range, and luxury options.
     Focus on hotels with high ratings and realistic current prices.
     """
+        return str(result).strip()
+    except Exception as e:
+        return f"Error researching hotels in {location}: {str(e)}"
 
 
 @tool
@@ -93,10 +116,17 @@ def search_attractions_activities(destination: str) -> str:
     """
     Search for real attractions and activities in a destination.
     Provides comprehensive information about popular sites and experiences.
+    
+    Args:
+        destination: The destination to search for attractions
+        
+    Returns:
+        A string containing research instructions for attractions information
     """
-    search_query = f"{destination} attractions activities tours things to do 2026"
+    try:
+        search_query = f"{destination} attractions activities tours things to do 2026"
 
-    return f"""
+        result = f"""
     Research task: Find attractions and activities in {destination}.
 
     Please research and provide:
@@ -111,6 +141,9 @@ def search_attractions_activities(destination: str) -> str:
     Include hidden gems and less-known but highly-rated activities.
     Focus on realistic itineraries that can be completed in 5 days.
     """
+        return str(result).strip()
+    except Exception as e:
+        return f"Error researching attractions in {destination}: {str(e)}"
 
 
 @tool
@@ -118,10 +151,17 @@ def search_travel_costs(destination: str) -> str:
     """
     Search for real travel costs and budgeting information.
     Provides current pricing for meals, activities, and transportation.
+    
+    Args:
+        destination: The travel destination to research costs for
+        
+    Returns:
+        A string containing research instructions for travel cost information
     """
-    search_query = f"{destination} travel costs budget prices meals transport 2025"
-
-    return f"""
+    try:
+        search_query = f"{destination} travel costs budget prices meals transport 2025"
+        
+        result = f"""
     Research task: Find cost information for a trip to {destination}.
 
     Please research and provide:
@@ -136,6 +176,47 @@ def search_travel_costs(destination: str) -> str:
     Provide realistic, current pricing information for 2025.
     Focus on actual costs travelers can expect.
     """
+        return str(result).strip()
+    except Exception as e:
+        return f"Error researching travel costs for {destination}: {str(e)}"
+
+
+@tool
+def search_travel_documentation(destination: str, trip_dates: str) -> str:
+    """
+    Search for travel documentation requirements and preparation information.
+    Provides visa requirements, packing lists, and travel tips.
+    
+    Args:
+        destination: The travel destination
+        trip_dates: The dates of travel
+        
+    Returns:
+        A string containing research instructions for travel documentation
+    """
+    try:
+        search_query = f"{destination} travel documentation visa requirements packing list travel tips 2026"
+
+        result = f"""
+    Research task: Find travel documentation and preparation information for {destination}.
+
+    Please research and provide:
+    1. Visa requirements and entry documentation needed
+    2. Passport validity requirements
+    3. Essential packing list for the destination and time of year
+    4. Weather conditions and appropriate clothing
+    5. Travel insurance recommendations
+    6. Health and vaccination requirements
+    7. Local customs, etiquette, and cultural considerations
+    8. Important travel tips and safety information
+    9. Currency and payment methods
+    10. Communication options (SIM cards, WiFi availability)
+
+    Provide comprehensive, current information for {trip_dates} travel to {destination}.
+    """
+        return str(result).strip()
+    except Exception as e:
+        return f"Error researching travel documentation for {destination}: {str(e)}"
 
 
 # ============================================================================
@@ -145,15 +226,21 @@ def search_travel_costs(destination: str) -> str:
 def create_flight_agent(destination: str, trip_dates: str):
     """Create the Flight Specialist agent with real research tools."""
     return Agent(
-        role="Flight Specialist",
+        role="Aviation Travel Consultant",
         goal=f"Research and recommend the best flight options for the {destination} trip "
              f"({trip_dates}), considering dates, airlines, prices, and flight durations. "
              f"Use real data from flight booking sites to provide accurate, current pricing.",
-        backstory="You are an experienced flight specialist with deep knowledge of "
-                  "airline schedules, pricing patterns, and travel routes. You excel at "
-                  "finding the best flight options that balance cost and convenience. "
-                  "You have booked thousands of flights and know the best times to fly. "
-                  "You always research current prices and use real booking site data.",
+        backstory="You are a seasoned aviation travel consultant with over 15 years of experience "
+                  "in the travel industry. You started your career working for major airlines and "
+                  "later transitioned to a travel agency where you've helped thousands of travelers "
+                  "find the perfect flights. You have deep knowledge of airline schedules, pricing "
+                  "patterns, seasonal variations, and travel routes across all major carriers. "
+                  "You excel at finding the best flight options that balance cost, convenience, "
+                  "and comfort. You understand the nuances of different airline alliances, frequent "
+                  "flyer programs, and know exactly when to book for the best deals. You stay "
+                  "updated with real-time pricing data and always verify information from multiple "
+                  "booking sites to ensure accuracy. Your expertise includes understanding layover "
+                  "strategies, airport connections, and how to avoid common booking pitfalls.",
         tools=[search_flight_prices],
         verbose=True,
         allow_delegation=False
@@ -217,6 +304,26 @@ def create_budget_agent(destination: str):
                   "compromising the travel experience. You research actual current prices "
                   "and provide realistic budget estimates.",
         tools=[search_travel_costs],
+        verbose=True,
+        allow_delegation=False
+    )
+
+
+def create_documentation_agent(destination: str, trip_dates: str):
+    """Create the Travel Documentation Specialist agent with preparation tools."""
+    return Agent(
+        role="Travel Documentation Specialist",
+        goal=f"Create a comprehensive travel preparation guide for {destination} trip ({trip_dates}), "
+             f"including documentation requirements, packing lists, and essential travel tips.",
+        backstory="You are an experienced travel documentation specialist with extensive knowledge "
+                  "of international travel requirements. You've helped thousands of travelers "
+                  "prepare for trips by ensuring they have all necessary documentation, understand "
+                  "visa requirements, and are properly equipped for their destination. You stay "
+                  "updated with current travel regulations, entry requirements, and destination-specific "
+                  "information. You create detailed, practical guides that help travelers avoid common "
+                  "pitfalls and ensure smooth travel experiences. Your expertise includes understanding "
+                  "cultural norms, weather patterns, and essential items needed for different destinations.",
+        tools=[search_travel_documentation],
         verbose=True,
         allow_delegation=False
     )
@@ -304,6 +411,23 @@ def create_budget_task(budget_agent, destination: str, trip_duration: str):
     )
 
 
+def create_documentation_task(documentation_agent, destination: str, trip_dates: str, trip_duration: str):
+    """Define the travel documentation and preparation task."""
+    return Task(
+        description=f"Create a comprehensive travel preparation guide for the {trip_duration} trip to "
+                   f"{destination} ({trip_dates}). Research and provide current information about visa "
+                   f"requirements, passport validity, essential packing list based on weather and activities, "
+                   f"travel insurance recommendations, health requirements, local customs and etiquette, "
+                   f"currency information, and important safety tips. Ensure all information is current "
+                   f"and specific to the travel dates and destination.",
+        agent=documentation_agent,
+        expected_output=f"A detailed travel preparation guide for {destination} including visa requirements, "
+                       f"documentation checklist, weather-appropriate packing list, travel insurance advice, "
+                       f"health requirements, cultural tips, currency information, and essential safety "
+                       f"information for {trip_dates} travel"
+    )
+
+
 # ============================================================================
 # CREW ORCHESTRATION
 # ============================================================================
@@ -361,17 +485,20 @@ def main(destination: str = "Iceland", trip_duration: str = "5 days",
     print()
 
     # Create agents with destination parameters
-    print("[1/4] Creating Flight Specialist Agent (researches real flights)...")
+    print("[1/5] Creating Flight Specialist Agent (researches real flights)...")
     flight_agent = create_flight_agent(destination, trip_dates)
 
-    print("[2/4] Creating Accommodation Specialist Agent (researches real hotels)...")
+    print("[2/5] Creating Accommodation Specialist Agent (researches real hotels)...")
     hotel_agent = create_hotel_agent(destination, trip_dates)
 
-    print("[3/4] Creating Travel Planner Agent (researches real attractions)...")
+    print("[3/5] Creating Travel Planner Agent (researches real attractions)...")
     itinerary_agent = create_itinerary_agent(destination, trip_duration)
 
-    print("[4/4] Creating Financial Advisor Agent (analyzes real costs)...")
+    print("[4/5] Creating Financial Advisor Agent (analyzes real costs)...")
     budget_agent = create_budget_agent(destination)
+
+    print("[5/5] Creating Travel Documentation Specialist Agent (prepares travel guide)...")
+    documentation_agent = create_documentation_agent(destination, trip_dates)
 
     print("\n✅ All agents created successfully!")
     print()
@@ -382,18 +509,19 @@ def main(destination: str = "Iceland", trip_duration: str = "5 days",
     hotel_task = create_hotel_task(hotel_agent, destination, trip_dates)
     itinerary_task = create_itinerary_task(itinerary_agent, destination, trip_duration, trip_dates)
     budget_task = create_budget_task(budget_agent, destination, trip_duration)
+    documentation_task = create_documentation_task(documentation_agent, destination, trip_dates, trip_duration)
 
     print("Tasks created successfully!")
     print()
 
     # Create the crew with sequential task execution
     print("Forming the Travel Planning Crew...")
-    print("Task Sequence: FlightAgent → HotelAgent → ItineraryAgent → BudgetAgent")
+    print("Task Sequence: FlightAgent → HotelAgent → ItineraryAgent → BudgetAgent → DocumentationAgent")
     print()
 
     crew = Crew(
-        agents=[flight_agent, hotel_agent, itinerary_agent, budget_agent],
-        tasks=[flight_task, hotel_task, itinerary_task, budget_task],
+        agents=[flight_agent, hotel_agent, itinerary_agent, budget_agent, documentation_agent],
+        tasks=[flight_task, hotel_task, itinerary_task, budget_task, documentation_task],
         verbose=True,
         process="sequential"  # Sequential task execution
     )
@@ -459,12 +587,23 @@ def main(destination: str = "Iceland", trip_duration: str = "5 days",
         print("    and research of current travel information sources.")
 
     except Exception as e:
-        print(f"\n❌ Error during crew execution: {str(e)}")
+        error_msg = str(e)
+        print(f"\n❌ Error during crew execution: {error_msg}")
         print("\n🔍 Troubleshooting:")
         print("   1. Verify OPENAI_API_KEY is set: export OPENAI_API_KEY='sk-...'")
         print("   2. Check API key is valid and has sufficient credits")
         print("   3. Verify internet connection for web research")
         print("   4. Check OpenAI API status at https://status.openai.com")
+        
+        # Handle specific CrewAI tool serialization errors
+        if "_FileProxy__buffer" in error_msg or "cell" in error_msg.lower():
+            print("\n⚠️  Tool Serialization Error Detected:")
+            print("   This is a known CrewAI issue with tool serialization.")
+            print("   Try:")
+            print("   - Updating CrewAI: pip install --upgrade crewai")
+            print("   - Restarting the Python interpreter")
+            print("   - Running with fewer agents/tools if the issue persists")
+        
         print()
         import traceback
         traceback.print_exc()
